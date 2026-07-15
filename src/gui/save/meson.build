@@ -1,4 +1,8 @@
 powder_files += files(
 	'LocalSaveActivity.cpp',
-	'ServerSaveActivity.cpp',
 )
+if enable_http
+	powder_files += files(
+		'ServerSaveActivity.cpp',
+	)
+endif

@@ -106,12 +106,7 @@ private:
 	SplitButton * saveSimulationButton;
 	bool saveSimulationButtonEnabled;
 	bool saveReuploadAllowed;
-	ui::Button * downVoteButton;
-	ui::Button * upVoteButton;
-	void ResetVoteButtons();
-	ui::Button * tagSimulationButton;
 	ui::Button * clearSimButton;
-	SplitButton * loginButton;
 	ui::Button * simulationOptionButton;
 	ui::Button * displayModeButton;
 	ui::Button * pauseButton;

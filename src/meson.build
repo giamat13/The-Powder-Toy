@@ -97,6 +97,7 @@ conf_data.set('SECURE_CIPHERS_ONLY', secure_ciphers_only.to_string())
 conf_data.set('PLATFORM_CLIPBOARD', platform_clipboard.to_string())
 
 conf_data.set('IGNORE_UPDATES', get_option('ignore_updates').to_string())
+conf_data.set('NOHTTP', (not enable_http).to_int())
 conf_data.set('SERVER', server)
 conf_data.set('STATICSERVER', static_server)
 conf_data.set('APPNAME', get_option('app_name'))

@@ -14,13 +14,10 @@
 #include "graphics/VideoBuffer.h"
 #include "gui/dialogues/ErrorMessage.h"
 #include "gui/dialogues/InformationMessage.h"
-#include "gui/login/LoginController.h"
-#include "gui/login/LoginView.h"
 #include "Config.h"
 
 PreviewController::PreviewController(int saveID, int saveDate, SavePreviewType savePreviewType, std::function<void ()> onDone_, std::unique_ptr<VideoBuffer> thumbnail):
 	saveId(saveID),
-	loginWindow(nullptr),
 	HasExited(false)
 {
 	previewModel = new PreviewModel();
@@ -45,11 +42,6 @@ PreviewController::PreviewController(int saveID, int saveDate, SavePreviewType s
 void PreviewController::Update()
 {
 	previewModel->Update();
-	if (loginWindow && loginWindow->HasExited == true)
-	{
-		delete loginWindow;
-		loginWindow = nullptr;
-	}
 	if (previewModel->GetDoOpen() && previewModel->GetSaveInfo() && previewModel->GetSaveInfo()->GetGameSave())
 	{
 		Platform::MarkPresentable();
@@ -59,8 +51,7 @@ void PreviewController::Update()
 
 void PreviewController::ShowLogin()
 {
-	loginWindow = new LoginController();
-	loginWindow->GetView()->MakeActiveWindow();
+	// Online login disabled - http support not compiled
 }
 
 void PreviewController::NotifyAuthUserChanged(Client * sender)

@@ -9,7 +9,6 @@
 #include "client/http/ReportSaveRequest.h"
 
 #include "gui/dialogues/TextPrompt.h"
-#include "gui/profile/ProfileActivity.h"
 #include "gui/interface/ScrollPanel.h"
 #include "gui/interface/AvatarButton.h"
 #include "gui/preview/PreviewController.h"
@@ -155,12 +154,7 @@ PreviewView::PreviewView(std::unique_ptr<VideoBuffer> newSavePreview):
 	if(showAvatars)
 	{
 		avatarButton = new ui::AvatarButton(ui::Point(4, (YRES/2)+4), ui::Point(34, 34), "");
-		avatarButton->SetActionCallback({ [this] {
-			if (avatarButton->GetUsername().size() > 0)
-			{
-				new ProfileActivity(avatarButton->GetUsername());
-			}
-		} });
+		// Avatar profiles disabled - http support not compiled
 		AddComponent(avatarButton);
 	}
 
@@ -691,12 +685,6 @@ void PreviewView::NotifyCommentBoxEnabledChanged(PreviewModel * sender)
 		commentWarningLabel->Visible = false;
 		AddComponent(commentWarningLabel);
 	}
-	else
-	{
-		submitCommentButton = new ui::Button(ui::Point(XRES/2, Size.Y-19), ui::Point(Size.X-(XRES/2), 19), "Login to comment");
-		submitCommentButton->SetActionCallback({ [this] { c->ShowLogin(); } });
-		AddComponent(submitCommentButton);
-	}
 }
 
 void PreviewView::SaveLoadingError(String errorMessage)
@@ -748,12 +736,7 @@ void PreviewView::NotifyCommentsChanged(PreviewModel * sender)
 			if (showAvatars)
 			{
 				tempAvatar = new ui::AvatarButton(ui::Point(2, currentY+7), ui::Point(26, 26), comments[i].authorName);
-				tempAvatar->SetActionCallback({ [tempAvatar] {
-					if (tempAvatar->GetUsername().size() > 0)
-					{
-						new ProfileActivity(tempAvatar->GetUsername());
-					}
-				} });
+				// Comment author profiles disabled - http support not compiled
 				commentComponents.push_back(tempAvatar);
 				commentsPanel->AddChild(tempAvatar);
 			}

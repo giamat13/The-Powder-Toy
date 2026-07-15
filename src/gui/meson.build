@@ -12,12 +12,18 @@ subdir('font')
 subdir('game')
 subdir('interface')
 subdir('localbrowser')
-subdir('login')
+if enable_http
+	subdir('login')
+endif
 subdir('options')
 subdir('preview')
-subdir('profile')
+if enable_http
+	subdir('profile')
+endif
 subdir('render')
 subdir('save')
-subdir('search')
-subdir('tags')
-subdir('update')
+if enable_http
+	subdir('search')
+	subdir('tags')
+	subdir('update')
+endif

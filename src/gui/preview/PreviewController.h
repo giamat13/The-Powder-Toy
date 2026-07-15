@@ -6,14 +6,12 @@
 
 class VideoBuffer;
 class SaveInfo;
-class LoginController;
 class PreviewModel;
 class PreviewView;
 class PreviewController: public ClientListener {
 	int saveId;
 	PreviewModel * previewModel;
 	PreviewView * previewView;
-	LoginController * loginWindow;
 	std::function<void ()> onDone;
 public:
 	void NotifyAuthUserChanged(Client * sender) override;

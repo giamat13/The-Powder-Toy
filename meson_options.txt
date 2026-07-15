@@ -39,7 +39,7 @@ option(
 option(
 	'http',
 	type: 'boolean',
-	value: true,
+	value: false,
 	description: 'Enable HTTP via libcurl'
 )
 option(

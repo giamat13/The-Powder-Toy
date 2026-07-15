@@ -19,6 +19,7 @@
 #include "prefs/GlobalPrefs.h"
 #include "client/Client.h"
 #include "client/GameSave.h"
+#include "client/SaveInfo.h"
 #include "common/platform/Platform.h"
 #include "common/Defer.h"
 #include "debug/DebugInfo.h"
@@ -44,29 +45,20 @@
 #include "gui/colourpicker/ColourPickerActivity.h"
 #include "gui/elementsearch/ElementSearchActivity.h"
 #include "gui/filebrowser/FileBrowserActivity.h"
-#include "gui/profile/ProfileActivity.h"
 #include "gui/save/LocalSaveActivity.h"
-#include "gui/save/ServerSaveActivity.h"
-#include "gui/update/UpdateActivity.h"
+
+#include "Config.h"
 
 #include "gui/console/ConsoleController.h"
 #include "gui/console/ConsoleView.h"
 #include "gui/localbrowser/LocalBrowserController.h"
 #include "gui/localbrowser/LocalBrowserView.h"
-#include "gui/login/LoginController.h"
-#include "gui/login/LoginView.h"
 #include "gui/options/OptionsController.h"
 #include "gui/options/OptionsView.h"
 #include "gui/preview/PreviewController.h"
 #include "gui/preview/PreviewView.h"
 #include "gui/render/RenderController.h"
 #include "gui/render/RenderView.h"
-#include "gui/search/SearchController.h"
-#include "gui/search/SearchView.h"
-#include "gui/tags/TagsController.h"
-#include "gui/tags/TagsView.h"
-
-#include "Config.h"
 #include <SDL.h>
 #include <iostream>
 
@@ -74,11 +66,8 @@ GameController::GameController():
 	firstTick(true),
 	foundSignID(-1),
 	activePreview(nullptr),
-	search(nullptr),
 	renderOptions(nullptr),
-	loginWindow(nullptr),
 	console(nullptr),
-	tagsWindow(nullptr),
 	localBrowser(nullptr),
 	options(nullptr),
 	debugFlags(0),
@@ -120,21 +109,9 @@ GameController::GameController():
 
 GameController::~GameController()
 {
-	if(search)
-	{
-		delete search;
-	}
 	if(renderOptions)
 	{
 		delete renderOptions;
-	}
-	if(loginWindow)
-	{
-		delete loginWindow;
-	}
-	if(tagsWindow)
-	{
-		delete tagsWindow;
 	}
 	if(console)
 	{
@@ -955,22 +932,10 @@ void GameController::Update()
 		renderOptions = nullptr;
 	}
 
-	if(search && search->HasExited)
-	{
-		delete search;
-		search = nullptr;
-	}
-
 	if(activePreview && activePreview->HasExited)
 	{
 		delete activePreview;
 		activePreview = nullptr;
-	}
-
-	if(loginWindow && loginWindow->HasExited)
-	{
-		delete loginWindow;
-		loginWindow = nullptr;
 	}
 
 	if(localBrowser && localBrowser->HasDone)
@@ -1224,24 +1189,7 @@ void GameController::SetReplaceModeFlags(int flags)
 
 void GameController::OpenSearch(String searchText)
 {
-	if(!search)
-		search = new SearchController([this] {
-			if (search->GetLoadedSave())
-			{
-				try
-				{
-					HistorySnapshot();
-					gameModel->SetSave(search->TakeLoadedSave(), gameView->ShiftBehaviour());
-				}
-				catch(GameModelException & ex)
-				{
-					new ErrorMessage("Cannot open save", ByteString(ex.what()).FromUtf8());
-				}
-			}
-		});
-	if (searchText.length())
-		search->DoSearch2(searchText);
-	ui::Engine::Ref().ShowWindow(search->GetView());
+	// Online search disabled - http support not compiled
 }
 
 void GameController::OpenLocalSaveWindow(bool asCurrent)
@@ -1352,22 +1300,12 @@ void GameController::OpenLocalBrowse()
 
 void GameController::OpenLogin()
 {
-	loginWindow = new LoginController();
-	ui::Engine::Ref().ShowWindow(loginWindow->GetView());
+	// Online login disabled - http support not compiled
 }
 
 void GameController::OpenProfile()
 {
-	auto user = Client::Ref().GetAuthUser();
-	if (user)
-	{
-		new ProfileActivity(user->Username);
-	}
-	else
-	{
-		loginWindow = new LoginController();
-		ui::Engine::Ref().ShowWindow(loginWindow->GetView());
-	}
+	// Online profile disabled - http support not compiled
 }
 
 void GameController::OpenElementSearch()
@@ -1393,16 +1331,7 @@ void GameController::OpenColourPicker()
 
 void GameController::OpenTags()
 {
-	if(gameModel->GetSave() && gameModel->GetSave()->GetID())
-	{
-		delete tagsWindow;
-		tagsWindow = new TagsController([this] { gameView->NotifySaveChanged(gameModel); }, gameModel->GetSave());
-		ui::Engine::Ref().ShowWindow(tagsWindow->GetView());
-	}
-	else
-	{
-		new ErrorMessage("Error", "No save open");
-	}
+	// Online tags disabled - http support not compiled
 }
 
 void GameController::OpenStamps()
@@ -1453,84 +1382,12 @@ void GameController::OpenRenderOptions()
 
 void GameController::OpenSaveWindow()
 {
-	auto user = gameModel->GetUser();
-	if (user)
-	{
-		Simulation * sim = gameModel->GetSimulation();
-		auto gameSave = sim->Save(gameModel->GetIncludePressure() != gameView->ShiftBehaviour(), RES.OriginRect());
-		if(!gameSave)
-		{
-			new ErrorMessage("Error", "Unable to build save.");
-		}
-		else
-		{
-			gameSave->paused = gameModel->GetPaused();
-
-			if(gameModel->GetSave())
-			{
-				auto tempSave = gameModel->GetSave()->CloneInfo();
-				tempSave->SetGameSave(std::move(gameSave));
-				new ServerSaveActivity(std::move(tempSave), [this](auto save) {
-					save->SetVote(1);
-					save->SetVotesUp(1);
-					LoadSave(std::move(save));
-				});
-			}
-			else
-			{
-				auto tempSave = std::make_unique<SaveInfo>(0, 0, 0, 0, 0, user->Username, "");
-				tempSave->SetGameSave(std::move(gameSave));
-				new ServerSaveActivity(std::move(tempSave), [this](auto save) {
-					save->SetVote(1);
-					save->SetVotesUp(1);
-					LoadSave(std::move(save));
-				});
-			}
-		}
-	}
-	else
-	{
-		new ErrorMessage("Error", "You need to login to upload saves.");
-	}
+	// Online save disabled - http support not compiled
 }
 
 void GameController::SaveAsCurrent()
 {
-	auto user = gameModel->GetUser();
-	if (gameModel->GetSave() && user && user->Username == gameModel->GetSave()->GetUserName())
-	{
-		Simulation * sim = gameModel->GetSimulation();
-		auto gameSave = sim->Save(gameModel->GetIncludePressure() != gameView->ShiftBehaviour(), RES.OriginRect());
-		if(!gameSave)
-		{
-			new ErrorMessage("Error", "Unable to build save.");
-		}
-		else
-		{
-			gameSave->paused = gameModel->GetPaused();
-
-			if(gameModel->GetSave())
-			{
-				auto tempSave = gameModel->GetSave()->CloneInfo();
-				tempSave->SetGameSave(std::move(gameSave));
-				new ServerSaveActivity(std::move(tempSave), true, [this](auto save) { LoadSave(std::move(save)); });
-			}
-			else
-			{
-				auto tempSave = std::make_unique<SaveInfo>(0, 0, 0, 0, 0, user->Username, "");
-				tempSave->SetGameSave(std::move(gameSave));
-				new ServerSaveActivity(std::move(tempSave), true, [this](auto save) { LoadSave(std::move(save)); });
-			}
-		}
-	}
-	else if (user)
-	{
-		OpenSaveWindow();
-	}
-	else
-	{
-		new ErrorMessage("Error", "You need to login to upload saves.");
-	}
+	// Online save disabled - http support not compiled
 }
 
 void GameController::FrameStep()
@@ -1742,15 +1599,7 @@ void GameController::RemoveNotification(Notification * notification)
 
 void GameController::RunUpdater(UpdateInfo info)
 {
-	if (Platform::CanUpdate())
-	{
-		Exit();
-		new UpdateActivity(info);
-	}
-	else
-	{
-		Platform::OpenURI(info.file);
-	}
+	// Online updates disabled - http support not compiled
 }
 
 bool GameController::GetMouseClickRequired()

@@ -27,22 +27,19 @@ constexpr auto DEBUG_FRAMETIME  = 0x0100;
 class FrameTime;
 class DebugInfo;
 class SaveFile;
+class SaveInfo;
 class Notification;
 class GameModel;
 class GameView;
 class Snapshot;
 class OptionsController;
 class LocalBrowserController;
-class SearchController;
 class PreviewController;
 class RenderController;
 class VideoBuffer;
 class Tool;
 class Menu;
-class SaveInfo;
 class GameSave;
-class LoginController;
-class TagsController;
 class ConsoleController;
 class GameController : public ClientListener, public ExplicitSingleton<GameController>
 {
@@ -55,11 +52,8 @@ private:
 	PreviewController * activePreview;
 	GameView * gameView;
 	GameModel * gameModel;
-	SearchController * search;
 	RenderController * renderOptions;
-	LoginController * loginWindow;
 	ConsoleController * console;
-	TagsController * tagsWindow;
 	LocalBrowserController * localBrowser;
 	OptionsController * options;
 	std::vector<std::unique_ptr<DebugInfo>> debugInfo;
